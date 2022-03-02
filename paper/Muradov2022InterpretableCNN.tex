@@ -72,83 +72,28 @@ pdfkeywords={First keyword, Second keyword, More},
 
 Для анализа качества предложенного метода проводится вычислительный эксперимент на выборках изображений рукописных цифр MNIST и изображений CIFAR-10.
 
-\bibliographystyle{unsrt}
-\bibliography{ref}
 
-\section{Headings: first level}
+
+\section{Problem Definition}
 \label{sec:headings}
 
-%\lipsum[4] See Section \ref{sec:headings}.
+Для CNN $\mathcal{N}$ содержащей $L$ слоев назовем $l$ слой $\mathcal{L}_l$. Так $\mathcal{L}_1$ - входной слой, а $\mathcal{L}_L$ - выходной слой. Слои со $2$ по $L-1$ - это скрытые слои. На вход сети $\mathcal{N}$ подается $x \in \mathcal{X}$, где $X \subseteq \mathbb{R}^d$, то есть из пространства размерности $d$. 
 
-\subsection{Headings: second level}
-%\lipsum[5]
-%\begin{equation}
-%	\xi _{ij}(t)=P(x_{t}=i,x_{t+1}=j|y,v,w;\theta)= {\frac {\alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}{\sum _{i=1}^{N} \sum _{j=1}^{N} \alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}}
-%\end{equation}
+Слои с $2$ по $L-1$ свёрточной сети $\mathcal{N}$ представляют собой свёртки, пулинги и нормализации. Каждый из которых по своей сути можно представить в виде линейных операций. Также между слоями применяются кусочно линейные функции активации.
 
-%\subsubsection{Headings: third level}
-%\lipsum[6]
+На выходе сети $\mathcal{N}$ получается вектор $a \in \mathcal{Y}$, где $Y \subseteq \mathbb{R}^{n_L}$, то есть пространство размерности $n_L$. Выходной слой сети $\mathcal{L}_l$ применяет функцию softmax для получения выходного вектора. 
 
-%\paragraph{Paragraph}
-%\lipsum[7]
+CNN работает как классификатор $F: \mathcal{X} \rightarrow \mathcal{Y}$, сопоставляющий элементам из множества $\mathcal{X}$ элементы из множества $\mathcal{Y}$. При этом $F$ представляет собой сложную систему с трудом понимаемую человеком.
 
+Таким образом перед работой стоит задача построить интерпретацию CNN $\mathcal{N}$ в виде линейной модели $\mathcal{M}$, хорошо поддающейся интерпретации. Где под интерпретацией понимается выделение важных признаков и классификация близких объектов одним и тем же классификатором. Таким образом для $\mathcal{M}$ выдвигаются два требования:
+\begin{enumerate}
+    \item \textbf{Точность}:
+    Модель $\mathcal{M}$ математически эквивалента модели $\mathcal{N}$.
+    \item \textbf{Консистентность}:
+    Модель $\mathcal{M}$ даёт близкие интерпретации для близких объектов выборки.
+\end{enumerate}
 
-
-\section{Examples of citations, figures, tables, references}
-%\label{sec:others}
-
-\subsection{Citations}
-%Citations use \verb+natbib+. The documentation may be found at
-%\begin{center}
-	%\url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}
-%\end{center}
-
-%Here is an example usage of the two main commands (\verb+citet+ and %\verb+citep+): Some people thought a thing \citep{kour2014real, hadash2018estimate} but other people thought something else \citep{kour2014fast}. Many people have speculated that if we knew exactly why \citet{kour2014fast} thought this\dots
-
-\subsection{Figures}
-%\lipsum[10]
-%See Figure \ref{fig:fig1}. Here is how you add footnotes. \footnote{Sample of the first footnote.}
-%\lipsum[11]
-
-%\begin{figure}
-%	\centering
-%	\includegraphics[width=0.5\textwidth]{../figures/log_reg_cs_exp.eps}
-%	\caption{Sample figure caption.}
-%	\label{fig:fig1}
-%\end{figure}
-
-\subsection{Tables}
-%See awesome Table~\ref{tab:table}.
-
-%The documentation for \verb+booktabs+ (`Publication quality tables in LaTeX') is available from:
-%\begin{center}
-%	\url{https://www.ctan.org/pkg/booktabs}
-%\end{center}
-
-
-%\begin{table}
-%	\caption{Sample table title}
-%	\centering
-%	\begin{tabular}{lll}
-%		\toprule
-%		\multicolumn{2}{c}{Part}                   \\
-%		\cmidrule(r){1-2}
-%		Name     & Description     & Size ($\mu$m) \\
-%		\midrule
-%		Dendrite & Input terminal  & $\sim$100     \\
-%		Axon     & Output terminal & $\sim$10      \\
-%		Soma     & Cell body       & up to $10^6$  \\
-%		\bottomrule
-%	\end{tabular}
-%	\label{tab:table}
-%\end{table}
-
-\subsection{Lists}
-%\begin{itemize}
-	%\item Lorem psum dolor sit amet
-	%\item consectetur adipiscing elit.
-	%\item Aliquam dignissim blandit est, in dictum tortor gravida eget. In ac %rutrum magna.
-%\end{itemize}
-
+\bibliographystyle{unsrt}
+\bibliography{ref}
 
 \end{document}
