@@ -1,0 +1,36 @@
+\documentclass{beamer}
+\beamertemplatenavigationsymbolsempty
+\usecolortheme{beaver}
+\setbeamertemplate{blocks}[rounded=true, shadow=true]
+\setbeamertemplate{footline}[page number]
+%
+\usepackage[utf8]{inputenc}
+\usepackage[english,russian]{babel}
+\usepackage{amssymb,amsfonts,amsmath,mathtext}
+\usepackage{subfig}
+\usepackage[all]{xy} % xy package for diagrams
+\usepackage{array}
+\usepackage{multicol}% many columns in slide
+\usepackage{hyperref}% urls
+\usepackage{hhline}%tables
+% Your figures are here:
+\graphicspath{ {fig/} {../fig/} }
+
+\begin{document}
+\begin{frame}{Выбор интерпретируемых сверточных моделей глубокого обучения}
+
+Рассматривается задача построения интерпретируемой сверточной нейронной сети. Под интерпретируемостью понимается выделение наиболее важных признаков и классификация схожих объектов одними и теми же классификаторами.
+
+\begin{columns}[c]
+\column{0.6\textwidth}
+% \includegraphics[width=1.0\textwidth]{}
+    Column 1
+\column{0.4\textwidth}
+    Column 2
+\end{columns}
+
+\bigskip
+К модели выдвигаются два требования: {\color{red}точность} и {\color{red}консистентность}.
+\end{frame}
+
+\end{document} 
