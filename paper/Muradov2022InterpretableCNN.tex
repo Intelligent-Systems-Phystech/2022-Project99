@@ -76,34 +76,54 @@ pdfkeywords={Model interpretability \and Deep Learning \and OpenBox \and Convolu
 \section{Problem Definition}
 \label{sec:headings}
 
-Задана выборка $x \in \mathbf{X}$ двумерные трехканальные изображения. $\mathbf{X} \in \{1, 2, ... k\}$, заданное конечное множество классов.
+Задана выборка $\mathbf{x} \in \mathbf{X}$ двумерные трехканальные изображения. $\mathbf{X} \in \{1, 2, ... k\}$, заданное конечное множество классов.
 
 Рассматривается задача построения модели глубокого обучения для задачи классификации.
 
-Модель $f(X, w)$ - сверточная нейронная сеть, для краткости CNN, это суперпозиция подмоделей $f_1 \circ f_2 \dots f_n$.
+Модель $\mathbf{f}(\mathbf{X}, \mathbf{w})$ --- сверточная нейронная сеть, для краткости CNN, это суперпозиция подмоделей $\mathbf{f_1} \circ \mathbf{f_2} \dots \mathbf{f_n}$.
 
-Функции $f_i$ - слои нейронной сети, это одни из функций: линейные $y_i = w_0 + \Sigma w_i * x_i$, свертки, батч-нормы или пулинги.
+Функции $\mathbf{f_i}$ --- слои нейронной сети, это одни из функций: линейные $\mathbf{f_i} = \mathbf{w_0} + \Sigma \mathbf{w_i} * \mathbf{x_i}$, свертки $S(i,j) = (K * I)(i,j) = \Sigma_m \Sigma_n I(i + m, j + n)K(m, n)$, батч-нормы $\hat{x_i^{(k)}} = \frac{x_i^{(k)} - E(x_i^{(k)})}{\sqrt{D(x_i^{(k)})}}$ или пулинги.
 
-$f(X, w)$ оптимизирует функцию кросс энтропии $\mathcal{L}$, $g$ - функция softmax.
+$\mathbf{f}(\mathbf{X}, \mathbf{w})$ оптимизирует функцию кросс энтропии $\mathcal{L}$, $\mathbf{g}$ --- функция softmax.
 
-$$g(x)_i = \frac{e^{x_i}}{\Sigma_j e^{x_j}}$$
-$$\mathcal{L} = -\Sigma_i \log g(x)_i \to \max$$
+$$\mathbf{g}(\mathbf{x})_i = \frac{e^{\mathbf{x_i}}}{\Sigma_j e^{\mathbf{x_j}}}$$
+$$\mathcal{L} = -\Sigma_i \log \mathbf{g}(\mathbf{x})_i \to \max$$
 
 Кроме задачи оптимизации модель также должна удовлетворять следующим требованиям к итерпретируемости: $\textbf{Точность}$ и $\textbf{Консистентность}$.
 \begin{itemize}
     \item \textbf{Точность}:
     Математическая эквивалентность.
+    $$\mathbf{f}(\mathbf{X}, \mathbf{w}) = \mathbf{f_{true}}(\mathbf{X}, \mathbf{w})$$
     \item \textbf{Консистентность}:
-    Близкие интерпретации для близких объектов выборки.
+    Близкие интерпретации для близких объектов выборки. $$\mathbf{x_i} \approx \mathbf{x_j} \Longrightarrow \mathbf{f}(\mathbf{x_i}, \mathbf{w}) \approx \mathbf{f}(\mathbf{x_j}, \mathbf{w})$$
 \end{itemize}
 
-\section{Our setup}
 
-Строим CNN и при помощи метода LIME \cite{ribeiro2016why} получаем интерпретации признаков модели.
+\section{Theory}
+
+\newtheorem{hypothesis}{Hypothesis}
+\begin{hypothesis}
+Слои сверточной нейронной сети: линейные, свертки, батч-нормализации, пулинги --- это линейные операции.
+\end{hypothesis}
+
+\begin{proof}
+\begin{itemize}
+    \item Линейный слой линеен по определению. 
+    $$\mathbf{f_i} = \mathbf{w_0} + \Sigma \mathbf{w_i} * \mathbf{x_i}$$
+    \item Свертка представима как линейная операция, если расписать её в специфичном виде как произведение матрицы входного изображения на матрицу с весами фильтра.
+    \item Пулинг на максимум представим как взаимодействие фильтра на изображение как на политоп.
+    \item Батч нормализация представима в виде скалярного произведения, применная поэлементно к каждому изображению.
+\end{itemize}
+\end{proof}
 
 \section{Computational experiment}
 
-Эксперимент заключается в получении baseline качества интрепретаций для дальнейшего исследования.
+Цель эксперимента: проверить работоспособность базового метода LIME \cite{ribeiro2016why} и сравнить качество работы с предлагаемой альтернативой OpenBox \cite{chu2019exact}. Критерием качества рассматривается точность предсказания класса объектов. Отличие $P(i)$ для метода от истинной вероятности, полученной из классификатора, где $P$ - вероятность принадлежности к классу, $i$ - индекс рассматриваемого объекта.
+
+\section{Our setup}
+
+
+Строим CNN и при помощи метода LIME \cite{ribeiro2016why} получаем интерпретации признаков модели.
 
 \subsection{Data}
 
@@ -113,15 +133,26 @@ $$\mathcal{L} = -\Sigma_i \log g(x)_i \to \max$$
 
 Считаем точность предсказаний и расстояние между признаками, полученные при помощи алгоритма LIME \cite{ribeiro2016why}.
 
-\subsection{Preliminary report}
-
-
-\begin{figure}[!t]
-  \subfloat{\includegraphics[width=0.5\textwidth]{../figures/accuracy.png}}
-  \subfloat{\includegraphics[width=0.5\textwidth]{../figures/similarity.png}}\\
- \caption{Accuracy and cosine similarity between decision features}
+\begin{figure}
+  \subfloat{\includegraphics[width=0.5\textwidth]{example.png}}
+  \subfloat{\includegraphics[width=0.5\textwidth]{example_Lime.png}}
+ \caption{Lime features decision}
   \label{fig:1}
 \end{figure}
+
+\subsection{Preliminary report}
+
+\begin{figure}
+\subfloat{\includegraphics[width=0.70\textwidth]{lime_and_true.png}}
+\caption{Lime accuracy}
+\label{fig:image}
+\end{figure}
+
+\newpage
+
+\subsection{Error analysis}
+
+Рассмотриваем простейшую модель сверточной нейронной сети и адаптируем методу OpenBox \cite{chu2019exact}, далее сравниваем полученные результаты с приминением базового метода LIME \cite{ribeiro2016why}.
 
 \newpage
 
