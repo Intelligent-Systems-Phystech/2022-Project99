@@ -62,7 +62,7 @@ pdfkeywords={Model interpretability \and Deep Learning \and OpenBox \and Convolu
 
 \keywords{Model interpretability \and Deep Learning \and OpenBox \and Convolutional neural networks}
 
-\section{Introduction}
+\section{Вступление}
 В данном исследовании стоит задача повышения интерпретируемости модели, где под интерпретируемостью понимается простота выделения важных признаков на выборке данных и классификация близких объектов одним и тем же классификатором.
 
 Проблемой является в целом высокая сложность интерпретации сверточных нейронных сетей, требующая комплексного подхода. На данный момент существует множество различных решений проблемы интерпретации \cite{ribeiro2016why, Lundberg2017aunified, chu2019exact} . В статье \cite{ribeiro2016why} описан метод \textbf{LIME}, предлагащий линейную апроксимацию предсказаний модели в некоторой небольшой окрестности вокруг объектов из тестовой выборки. Такой подход позволяет получить простую для интерпретации модель без использования информации о строении модели изнутри \textquotedblleft model-agnostic\textquotedblright. Но он весьма неустойчив к выбросам и сильно зависим от точности апроксимации. В статье \cite{Lundberg2017aunified} предлагается подход \textbf{SHAP}, заключающийся в рассмотрении вклада каждого признака в работу модели. Таким образом удается выделять даже скрытые, но значимые признаки. Однако применимость данного подхода ограничена ввиду высоких вычислительных затрат: требуется многократное обучение модели, и он весьма зависим от выборки данных. Ещё один подход к интерпретации \textbf{OpenBox}, описываемый в статье \cite{chu2019exact} предлагает построение математически эквивалентных линейных моделей для линейных нейронных сетей. Он показал более высокую эффективность по сравнению с \textbf{LIME} и весьма перспективен для дальнейшей работы.
@@ -73,89 +73,98 @@ pdfkeywords={Model interpretability \and Deep Learning \and OpenBox \and Convolu
 
 
 
-\section{Problem Definition}
+\section{Постановка проблема интерпретируемости сверточных нейронных сетей}
 \label{sec:headings}
 
-Задана выборка $\mathbf{x} \in \mathbf{X}$ двумерные трехканальные изображения. $\mathbf{X} \in \{1, 2, ... k\}$, заданное конечное множество классов.
+Задана выборка $\mathbf{x} \in \mathbf{X}$, где $\mathbf{X} = \mathbb{R}^2$, то есть двумерные изображения. $\mathbf{y} \in \{1, 2, ... k\}$, заданное конечное множество классов.
 
-Рассматривается задача построения модели глубокого обучения для задачи классификации.
+Задача построенить модель глубокого обучения для задачи классификации.
 
-Модель $\mathbf{f}(\mathbf{X}, \mathbf{w})$ --- сверточная нейронная сеть, для краткости CNN, это суперпозиция подмоделей $\mathbf{f_1} \circ \mathbf{f_2} \dots \mathbf{f_n}$.
+Модель $\mathbf{f}(\mathbf{X}, \mathbf{w})$ --- сверточная нейронная сеть, для краткости CNN, это суперпозиция подмоделей $\mathbf{f_1} \circ \mathbf{f_2} \dots \mathbf{f}_n$.
 
 Функции $\mathbf{f_i}$ --- слои нейронной сети, это одни из функций: линейные $\mathbf{f_i} = \mathbf{w_0} + \Sigma \mathbf{w_i} * \mathbf{x_i}$, свертки $S(i,j) = (K * I)(i,j) = \Sigma_m \Sigma_n I(i + m, j + n)K(m, n)$, батч-нормы $\hat{x_i^{(k)}} = \frac{x_i^{(k)} - E(x_i^{(k)})}{\sqrt{D(x_i^{(k)})}}$ или пулинги.
 
-$\mathbf{f}(\mathbf{X}, \mathbf{w})$ оптимизирует функцию кросс энтропии $\mathcal{L}$, $\mathbf{g}$ --- функция softmax.
+В модели $\mathbf{f}(\mathbf{X}, \mathbf{w})$ оптимизируется функция кросс энтропии $\mathcal{L}(\mathbf{g}, \mathbf{p})$, $\mathbf{g}$ --- функция softmax $\mathbf{g}$: $\mathbf{X} \to \mathbf{y}$ на выходе предсказанное распределение вероятности соответствия объектов классам, функция $\mathbf{p}$: $\mathbf{X} \to \mathbf{y}$ на выходе истинное распределение вероятности соответствия объектов классам.
 
-$$\mathbf{g}(\mathbf{x})_i = \frac{e^{\mathbf{x_i}}}{\Sigma_j e^{\mathbf{x_j}}}$$
-$$\mathcal{L} = -\Sigma_i \log \mathbf{g}(\mathbf{x})_i \to \max$$
+$$\mathbf{g}(\mathbf{x})_i = \frac{exp(\mathbf{x_i})}{\Sigma_j exp(\mathbf{x_j})},$$
+$$\mathcal{L} = -\Sigma_i \mathbf{p}(\mathbf{x})_i \log \mathbf{g}(\mathbf{x})_i \to \max$$
 
-Кроме задачи оптимизации модель также должна удовлетворять следующим требованиям к итерпретируемости: $\textbf{Точность}$ и $\textbf{Консистентность}$.
-\begin{itemize}
-    \item \textbf{Точность}:
+Кроме задачи оптимизации модель должна удовлетворять двум требованиям к итерпретируемости: $\textbf{точность}$ и $\textbf{консистентность}$.
+\begin{description}
+    \item{Точность}:
     Математическая эквивалентность.
-    $$\mathbf{f}(\mathbf{X}, \mathbf{w}) = \mathbf{f_{true}}(\mathbf{X}, \mathbf{w})$$
-    \item \textbf{Консистентность}:
-    Близкие интерпретации для близких объектов выборки. $$\mathbf{x_i} \approx \mathbf{x_j} \Longrightarrow \mathbf{f}(\mathbf{x_i}, \mathbf{w}) \approx \mathbf{f}(\mathbf{x_j}, \mathbf{w})$$
-\end{itemize}
+    $$\mathbf{f}(\mathbf{x}, \mathbf{w}) = \mathbf{p}(\mathbf{x})$$ 
+    \item{Консистентность}:
+    Близкие интерпретации для близких объектов выборки. $$\mathbf{x_i} \in U_\mathbf{\epsilon}(\mathbf{x_j}) \Longrightarrow \mathbf{f}(\mathbf{x_i}, \mathbf{w}) \in U_{\mathbf{f}(\mathbf{\epsilon}, \mathbf{w})}\mathbf{f}(\mathbf{x_j}, \mathbf{w})$$
+\end{description}
 
 
-\section{Theory}
+\section{Линейность сверточных нейронных сетей}
 
-\newtheorem{hypothesis}{Hypothesis}
-\begin{hypothesis}
+\newtheorem{theorem}{Theorem}
+\begin{theorem}
 Слои сверточной нейронной сети: линейные, свертки, батч-нормализации, пулинги --- это линейные операции.
-\end{hypothesis}
+\end{theorem}
 
 \begin{proof}
-\begin{itemize}
-    \item Линейный слой линеен по определению. 
-    $$\mathbf{f_i} = \mathbf{w_0} + \Sigma \mathbf{w_i} * \mathbf{x_i}$$
-    \item Свертка представима как линейная операция, если расписать её в специфичном виде как произведение матрицы входного изображения на матрицу с весами фильтра.
-    \item Пулинг на максимум представим как взаимодействие фильтра на изображение как на политоп.
-    \item Батч нормализация представима в виде скалярного произведения, применная поэлементно к каждому изображению.
-\end{itemize}
+Свертка представима как линейная операция, если расписать её как произведение матрицы входного изображения на матрицу с весами фильтра. Пулинг на максимум представим в виде взаимодействия фильтра на изображение как на политоп. Батч нормализация представима как скалярное произведение, применённое поэлементно к каждому изображению.
 \end{proof}
 
-\section{Computational experiment}
+\section{Вычислительный эксперимент}
 
-Цель эксперимента: проверить работоспособность базового метода LIME \cite{ribeiro2016why} и сравнить качество работы с предлагаемой альтернативой OpenBox \cite{chu2019exact}. Критерием качества рассматривается точность предсказания класса объектов. Отличие $P(i)$ для метода от истинной вероятности, полученной из классификатора, где $P$ - вероятность принадлежности к классу, $i$ - индекс рассматриваемого объекта.
+Цель эксперимента: сравнить качество базового метода LIME \cite{ribeiro2016why} с предлагаемой альтернативой OpenBox \cite{chu2019exact}. Критерием качества рассматривается точность предсказания класса объектов. Косинусное расстояние между распределением вероятностей классов $\mathbf{q}(\mathbf{x})$ полученные методом и распределением вероятностей $\mathbf{g}(\mathbf{x})$, полученным классификатором.
 
-\section{Our setup}
+\section{Базовый эксперимент}
 
 
-Строим CNN и при помощи метода LIME \cite{ribeiro2016why} получаем интерпретации признаков модели.
+Строим CNN и при помощи метода LIME \cite{ribeiro2016why} получаем интерпретации признаков модели. Результаты работы LIME по выделению важных признаков показан на рисунке 1.
 
-\subsection{Data}
+\subsection{Исходные данные}
 
   Fashion-MNIST датасет содержащий 60000 изображений в train и 10000 изображений в test из 10 различных классов. Каждое изображение имеет разрешение 28*28 пикселей  \citep{fashionmnist}.
 
-\subsection{Configuration of algorithm run}
+\subsection{Конфигурация запуска алгоритма}
 
-Считаем точность предсказаний и расстояние между признаками, полученные при помощи алгоритма LIME \cite{ribeiro2016why}.
+Считаем точность предсказаний и расстояние между признаками, полученные при помощи алгоритма LIME \cite{ribeiro2016why} (рисунок 2). 
 
 \begin{figure}
-  \subfloat{\includegraphics[width=0.5\textwidth]{example.png}}
-  \subfloat{\includegraphics[width=0.5\textwidth]{example_Lime.png}}
+  \subfloat{\includegraphics[width=0.4\textwidth]{fig/example.png}}
+  \subfloat{\includegraphics[width=0.4\textwidth]{fig/example_lime.png}}
  \caption{Lime features decision}
   \label{fig:1}
 \end{figure}
 
-\subsection{Preliminary report}
+\subsection{Предварительный отчет}
 
 \begin{figure}
-\subfloat{\includegraphics[width=0.70\textwidth]{lime_and_true.png}}
+\subfloat{\includegraphics[width=0.70\textwidth]{fig/True_Lime.png}}
 \caption{Lime accuracy}
 \label{fig:image}
 \end{figure}
 
 \newpage
 
-\subsection{Error analysis}
+\subsection{Анализ ошибки}
 
-Рассмотриваем простейшую модель сверточной нейронной сети и адаптируем методу OpenBox \cite{chu2019exact}, далее сравниваем полученные результаты с приминением базового метода LIME \cite{ribeiro2016why}.
+Рассмотриваем простейшую модель сверточной нейронной сети и адаптируем методу OpenBox \cite{chu2019exact}, далее сравниваем полученные результаты с приминением базового метода LIME \cite{ribeiro2016why}. 
+
+Эксперимент заключается в анализе влияния изменения картинок на значения градиентов при backward проходе. Что позволяет выделить на картинках наиболее важные признаки и степень их влияения на результат работы сверточной нейронной сети. График точности метода OpenBox указан на рисунке 3.
+
+\begin{figure}
+\subfloat{\includegraphics[width=0.70\textwidth]{fig/True_OpenBox.png}}
+\caption{OpenBox accuracy}
+\label{fig:image2}
+\end{figure}
 
 \newpage
 
+\subsection{Заключение}
+    \begin{block}{Результаты исследовательской работы:}
+    \begin{enumerate}
+        \item Предложена адаптация метода OpenBox в применении к работе со сверточными нейронными сетями.
+        \item Доказана гипотеза о линейности слоев сверточных нейронных сетей.
+    \end{enumerate}
+    \end{block}
 \bibliographystyle{unsrt}
 \bibliography{ref}
 
