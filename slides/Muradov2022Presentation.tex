@@ -73,15 +73,15 @@ machine learning algorithms, 2017.
 \end{frame}
 %----------------------------------------------------------------------------------------------------------
 \begin{frame}{Постановка задачи: модель и задача оптимизации}
-Задана выборка $\mathbf{x} \in \mathbf{X}$, где $\mathbf{X} \in \mathbb{R}^m$. $\mathbf{y} \in \{1, 2, ... k\}$ --- заданное конечное множество классов.
+Задана выборка $\mathbf{x} \in \mathbf{X}$, где $\mathbf{X} \in \mathbb{R}^m$. Вектор меток классов $\mathbf{y} \in \{1, 2, ... k\}$ --- заданное конечное множество классов.
 
 Модель $\mathbf{f}(\mathbf{X}, \mathbf{w})$ --- сверточная нейронная сеть, это суперпозиция подмоделей $\mathbf{f_1} \circ \mathbf{f_2} \dots \mathbf{f_n}$.
 
 Функции $\mathbf{f_i}$ --- слои нейронной сети, это одни из функций: линейные, свертки, операции побатчевой нормализации или пулинги.
 
-В модели $\mathbf{f}(\mathbf{X}, \mathbf{w})$ оптимизируется функция кросс-энтропии $\mathcal{L}(\mathbf{g}, \mathbf{p})$, $\mathbf{g}$ --- функция softmax, $\mathbf{g}$: $\mathbb{R}^m \to \{1,\dots,k\}$, на выходе предсказанное распределение вероятности соответствия объектов классам.
+В модели $\mathbf{f}(\mathbf{X}, \mathbf{w})$ оптимизируется функция кросс-энтропии $\mathcal{L}(\mathbf{g}, \mathbf{y})$, $\mathbf{g}$ --- функция softmax, $\mathbf{g}$: $\mathbb{R}^m \to \{1,\dots,k\}$, на выходе предсказанное распределение вероятности соответствия объектов классам.
 
-$$\mathbf{g}(\mathbf{x})_i = \frac{\text{exp}(\mathbf{x_i})}{\Sigma_j \text{exp}(\mathbf{x_j})},$$
+$$\mathbf{g}(\mathbf{x})_i = \frac{\text{exp}(\mathbf{x_i})}{\Sigma_j \text{exp}(\mathbf{x_j})}.$$
 $$\mathcal{L} = -\Sigma_i \mathbf{y}_i \log \mathbf{g}(\mathbf{x})_i \to \max.$$
 
 \end{frame}
@@ -92,7 +92,7 @@ $$\mathcal{L} = -\Sigma_i \mathbf{y}_i \log \mathbf{g}(\mathbf{x})_i \to \max.$$
 \begin{enumerate}
    \item{Точность}:
     Математическая эквивалентность.
-    $$\mathbf{f}(\mathbf{X}, \mathbf{w}) = \mathbf{f}_{method}(\mathbf{X}, \mathbf{w}),$$ Где $\mathbf{f}$ - исходная модель, $\mathbf{f}_{method}$ - построенная модель.
+    $$\mathbf{f}(\mathbf{X}, \mathbf{w}) = \mathbf{f}_{method}(\mathbf{X}, \mathbf{w}).$$ Где $\mathbf{f}$ - исходная модель, $\mathbf{f}_{method}$ - построенная модель.
     \item{Консистентность}:
     Близкие интерпретации для близких объектов выборки. $$\mathbf{x_i} \in U_\mathbf{\epsilon}(\mathbf{x_j}) \Longrightarrow \mathbf{f}_{method}(\mathbf{x_i}, \mathbf{w}) \in U_{\mathbf{f}_{method}(\mathbf{\epsilon}, \mathbf{w})}\mathbf{f}_{methood}(\mathbf{x_j}, \mathbf{w}).$$
 \end{enumerate}
